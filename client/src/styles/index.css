@@ -1,0 +1,201 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap');
+
+@import 'tailwindcss';
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+body {
+  font-family: 'Pretendard', sans-serif;
+  color: white;
+  overflow: hidden;
+  background-color: #030612;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.app-horizontal-gutter {
+  padding-left: max(28px, env(safe-area-inset-left));
+  padding-right: max(28px, env(safe-area-inset-right));
+}
+
+.verse-content-frame {
+  width: min(100%, 980px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(28px, env(safe-area-inset-left));
+  padding-right: max(28px, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .app-horizontal-gutter,
+  .verse-content-frame {
+    padding-left: 44px;
+    padding-right: 44px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-horizontal-gutter,
+  .verse-content-frame {
+    padding-left: 64px;
+    padding-right: 64px;
+  }
+}
+
+.beam-element {
+  height: 100vh;
+  width: 0;
+  top: 0;
+  position: absolute;
+  transform: rotate(10deg);
+  transform-origin: top right;
+  animation-name: slideBeam;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.loading-ripple-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(66% 52% at 50% 50%, rgb(56 189 248 / 0.2) 0%, rgb(56 189 248 / 0.08) 24%, rgb(56 189 248 / 0) 66%),
+    radial-gradient(58% 48% at 52% 52%, rgb(45 212 191 / 0.16) 0%, rgb(45 212 191 / 0.06) 26%, rgb(45 212 191 / 0) 68%);
+  mix-blend-mode: screen;
+  animation: centerGlow 1.25s ease-in-out infinite;
+}
+
+.loading-ripple-overlay::before,
+.loading-ripple-overlay::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 38vmin;
+  height: 32vmin;
+  border-radius: 48% 52% 42% 58% / 56% 44% 60% 40%;
+  transform: translate(-50%, -50%) scale(0.55) rotate(0deg);
+  background:
+    radial-gradient(58% 46% at 36% 42%, rgb(125 211 252 / 0.4) 0%, rgb(125 211 252 / 0.15) 42%, rgb(125 211 252 / 0) 80%),
+    radial-gradient(50% 42% at 66% 58%, rgb(45 212 191 / 0.32) 0%, rgb(45 212 191 / 0.12) 40%, rgb(45 212 191 / 0) 76%);
+  opacity: 0;
+  filter: blur(12px) saturate(155%);
+}
+
+.loading-ripple-overlay::before {
+  animation: energyBloomA 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.loading-ripple-overlay::after {
+  width: 43vmin;
+  height: 35vmin;
+  border-radius: 56% 44% 38% 62% / 46% 58% 42% 54%;
+  animation: energyBloomB 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite 0.42s;
+}
+
+@keyframes slideBeam {
+  from { right: -25vw; }
+  to { right: 125vw; }
+}
+
+@keyframes centerGlow {
+  0% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 0.68;
+  }
+  100% {
+    opacity: 0.42;
+  }
+}
+
+@keyframes energyBloomA {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) rotate(-8deg);
+    border-radius: 46% 54% 43% 57% / 58% 42% 60% 40%;
+  }
+  20% {
+    opacity: 0.8;
+    border-radius: 53% 47% 38% 62% / 46% 56% 44% 54%;
+  }
+  58% {
+    opacity: 0.35;
+    border-radius: 49% 51% 58% 42% / 40% 60% 46% 54%;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5.2) rotate(12deg);
+    border-radius: 56% 44% 48% 52% / 62% 38% 55% 45%;
+  }
+}
+
+@keyframes energyBloomB {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.48) rotate(10deg);
+    border-radius: 60% 40% 44% 56% / 48% 57% 43% 52%;
+  }
+  24% {
+    opacity: 0.72;
+    border-radius: 45% 55% 57% 43% / 61% 39% 55% 45%;
+  }
+  62% {
+    opacity: 0.32;
+    border-radius: 50% 50% 41% 59% / 43% 57% 48% 52%;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(5.0) rotate(-14deg);
+    border-radius: 42% 58% 51% 49% / 56% 44% 62% 38%;
+  }
+}
+
+/* 화면 하단과 좌측 끝부분에 자연스럽게 스며들도록 막아주는 다크 비네팅 효과 */
+.vignette-bottom {
+  box-shadow: 0 0 50vh 40vh #030612;
+  width: 100vw;
+  height: 0;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.vignette-left {
+  box-shadow: 0 0 35vw 25vw #030612;
+  width: 0;
+  height: 100vh;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.fade-in {
+  animation: fadeIn 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
