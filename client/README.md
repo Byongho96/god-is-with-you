@@ -1,16 +1,81 @@
-# React + Vite
+# God is with You
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive web application that displays daily verses and provides personalized messages based on user input.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend**: React 18 + Vite
+- **Styling**: Tailwind CSS v4
+- **Language**: JavaScript (ES6+)
+- **Build Tool**: Vite
+- **Package Manager**: npm
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Daily Verse Display**: Fetches and displays daily Bible verses or messages
+- **Custom Message Input**: Users can submit text to receive personalized messages
+- **Language Selection**: Toggle between Korean (KR) and English (EN)
+- **Persistent Language Settings**: Language preference saved to localStorage
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Loading Animation**: Smooth pulsing animation during data fetching
+- **Dynamic Enter Key Behavior**: 
+  - PC: Enter sends, Shift+Enter wraps
+  - Mobile: Enter creates new line
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+## Development
+
+```bash
+npm run dev
+```
+
+Server runs at `http://localhost:5173` by default.
+
+## Build
+
+```bash
+npm run build
+```
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+## Project Structure
+
+```
+src/
+├── App.jsx              # Main app component with routing
+├── main.jsx             # Entry point
+├── api/
+│   └── bibleApi.js      # API integration
+├── components/
+│   ├── ChatInput.jsx    # Text input with auto-resize
+│   ├── VerseDisplay.jsx # Verse rendering
+│   └── LanguageSelector.jsx # Language toggle
+└── styles/
+    └── index.css        # Global styles and animations
+```
+
+## API Endpoints
+
+**Base URL**: `{VITE_API_BASE_URL}/api/v1`
+
+- `GET /daily-verse?language=<language>` - Fetch daily verse
+- `POST /custom-message?language=<language>` - Submit custom message request
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
