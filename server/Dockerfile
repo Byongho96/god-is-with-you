@@ -5,13 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies for this FastAPI app.
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn[standard] \
-    google-generativeai \
-    python-dotenv \
-    pydantic
+COPY requirements.txt /app/
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py schemas.py /app/
 
