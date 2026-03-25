@@ -9,7 +9,7 @@ COPY requirements.txt /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py schemas.py /app/
+COPY main.py schemas.py constants.py /app/
 
 EXPOSE 8000
 

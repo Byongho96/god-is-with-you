@@ -31,6 +31,7 @@ export default function App() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const name = searchParams.get('name') || '';
+  const key = searchParams.get('key') || '';
   const [languageCode, setLanguageCode] = useState(() => {
     const urlLanguage = searchParams.get('language');
     if (urlLanguage) return resolveLanguageCode(urlLanguage);
@@ -68,7 +69,7 @@ export default function App() {
     setError('');
 
     try {
-      const payload = await fetchDailyVerse({ language });
+      const payload = await fetchDailyVerse({ name, language, key });
       setVerseData(normalizeVersePayload(payload));
     } catch (requestError) {
       setError(requestError.message);
@@ -76,7 +77,7 @@ export default function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [language]);
+  }, [key, language, name]);
 
   useEffect(() => {
     loadDailyVerse();
@@ -104,7 +105,7 @@ export default function App() {
     setError('');
 
     try {
-      const payload = await fetchCustomMessage({ name, language, situation });
+      const payload = await fetchCustomMessage({ name, language, situation, key });
       setVerseData(normalizeVersePayload(payload));
     } catch (requestError) {
       setError(requestError.message);

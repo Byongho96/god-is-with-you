@@ -7,8 +7,13 @@ from dotenv import load_dotenv
 
 from google import genai
 from google.genai import types
-from httpx import request
 
+from server.constants import (
+    CANONICAL_LANGUAGE_NAMES,
+    LANGUAGE_ALIASES,
+    PREDEFINED_DAILY_VERSES,
+    UNAUTHORIZED_MESSAGES,
+)
 from server.schemas import VerseRequest, VerseResponse
 
 # ---------------------------------------------------------
@@ -22,6 +27,11 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 MODEL_ID = 'gemini-2.5-flash-lite'
+
+# Allowed NFC keys for simple API key-based access control (comma-separated in .env)
+ALLOWED_NFC_KEYS = {
+    key.strip() for key in os.getenv("ALLOWED_NFC_KEYS", "").split(",") if key.strip()
+}
 
 app = FastAPI(
     title="Bible Verse & Comfort API",
@@ -57,6 +67,38 @@ Rules:
 # Cache Memory (Only for Daily Verses)
 # ---------------------------------------------------------
 DAILY_VERSE_CACHE = {}
+
+
+def normalize_language(language: str | None) -> str:
+    """Normalizes incoming language values to a supported canonical language name."""
+    normalized_value = (language or "Korean").strip().lower()
+
+    for language_key, aliases in LANGUAGE_ALIASES.items():
+        if normalized_value in aliases:
+            return CANONICAL_LANGUAGE_NAMES[language_key]
+
+    return "Korean"
+
+
+def get_language_key(language: str | None) -> str:
+    return normalize_language(language).lower()
+
+
+def is_authorized_nfc_key(key: str | None) -> bool:
+    if not key:
+        return False
+
+    return key.strip() in ALLOWED_NFC_KEYS
+
+
+def get_predefined_daily_verse(language: str | None) -> VerseResponse:
+    language_key = get_language_key(language)
+    return VerseResponse(**PREDEFINED_DAILY_VERSES[language_key])
+
+
+def get_unauthorized_response(language: str | None) -> VerseResponse:
+    language_key = get_language_key(language)
+    return VerseResponse(**UNAUTHORIZED_MESSAGES[language_key])
 
 def get_daily_cache_key(language: str) -> str:
     """Generates a cache key based on the current date and language."""
@@ -109,13 +151,21 @@ def health_check():
 
 @app.get("/api/v1/daily-verse", response_model=VerseResponse, tags=["Verse"])
 async def generate_daily_verse(
-    language: str = Query("Korean", description="Target language for the verse")
+    language: str = Query("Korean", description="Target language for the verse"),
+    key: str | None = Query(None, description="NFC key for access control")
 ):
     """
     Returns a highly random, uplifting Bible verse to start the day.
     Caches the result for 24 hours based on the requested language.
     """
-    cache_key = get_daily_cache_key(language)
+    normalized_language = normalize_language(language)
+
+    print(is_authorized_nfc_key(key))
+
+    if not is_authorized_nfc_key(key):
+        return get_predefined_daily_verse(normalized_language)
+
+    cache_key = get_daily_cache_key(normalized_language)
     
     # 1. Check Cache
     if cache_key in DAILY_VERSE_CACHE:
@@ -128,7 +178,7 @@ async def generate_daily_verse(
         rule_text = "AVOID top 50 common verses (e.g., John 3:16). Use lesser-known books (Wisdom, Minor Prophets)."
 
     prompt = f"""
-    Lang: {language}
+    Lang: {normalized_language}
     Task: Uplifting morning verse.
     Rule: {rule_text}
     """
@@ -145,12 +195,17 @@ async def generate_daily_verse(
 async def generate_custom_message(
     request: VerseRequest | None = None,
     name: str | None = Query(None, description="Optional user name to inject for listener references."),
-    language: str = Query("Korean", description="Target language for the verse")
+    language: str = Query("Korean", description="Target language for the verse"),
+    key: str | None = Query(None, description="NFC key for access control")
 ):
     """
     Generates a personalized, situational message based on a Bible verse.
     This endpoint does NOT use caching and generates a fresh response every time.
     """
+    normalized_language = normalize_language(language)
+
+    if not is_authorized_nfc_key(key):
+        return get_unauthorized_response(normalized_language)
 
     # Situation-based instructions
     if request and request.situation:
@@ -160,10 +215,10 @@ async def generate_custom_message(
         sit_context = "Situation: None"
         sit_instruction = "General powerful encouragement."
 
-    name_context, name_instruction = get_name_context_and_instruction(name, language)
+    name_context, name_instruction = get_name_context_and_instruction(name, normalized_language)
 
     prompt = f"""
-    Lang: {language}
+    Lang: {normalized_language}
     {sit_context}
     {name_context}
     

@@ -1,10 +1,11 @@
 const API_ROOT = import.meta.env.VITE_API_BASE_URL || '';
 const API_BASE_URL = `${API_ROOT}/api/v1`;
 
-function buildQueryParams(name, language) {
+function buildQueryParams(name, language, key) {
   const params = new URLSearchParams();
   if (name?.trim()) params.set('name', name.trim());
   if (language?.trim()) params.set('language', language.trim());
+  if (key?.trim()) params.set('key', key.trim());
   return params.toString();
 }
 
@@ -19,16 +20,16 @@ async function readError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-export async function fetchDailyVerse({ name = '', language = 'Korean' } = {}) {
-  const query = buildQueryParams(name, language);
+export async function fetchDailyVerse({ name = '', language = 'Korean', key = '' } = {}) {
+  const query = buildQueryParams(name, language, key);
   const endpoint = query ? `${API_BASE_URL}/daily-verse?${query}` : `${API_BASE_URL}/daily-verse`;
   const response = await fetch(endpoint);
   if (!response.ok) throw new Error(await readError(response, 'Failed to fetch daily verse.'));
   return response.json();
 }
 
-export async function fetchCustomMessage({ name = '', situation = '', language = 'Korean' } = {}) {
-  const query = buildQueryParams(name, language);
+export async function fetchCustomMessage({ name = '', situation = '', language = 'Korean', key = '' } = {}) {
+  const query = buildQueryParams(name, language, key);
   const endpoint = query ? `${API_BASE_URL}/custom-message?${query}` : `${API_BASE_URL}/custom-message`;
   const response = await fetch(endpoint, {
     method: 'POST',

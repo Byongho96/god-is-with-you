@@ -2,6 +2,8 @@
 
 A FastAPI service that generates Bible verses using Gemini, with optional personalization by `name` and output translation by `language`.
 
+NFC key authorization is enforced through `ALLOWED_NFC_KEYS` in the environment.
+
 ## Requirements
 
 - Python 3.11+
@@ -19,6 +21,7 @@ pip install -r requirements.txt
 
 ```env
 GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+ALLOWED_NFC_KEYS=key1,key2,key3
 ```
 
 3. Start the server.
@@ -45,13 +48,18 @@ docker run --rm -p 8000:8000 --env-file .env bible-api
 
 Query parameters:
 
-- `name` (optional)
 - `language` (optional, default: `Korean`)
+- `key` (optional, but required for Gemini-generated content)
+
+Behavior:
+
+- If `key` is missing or not included in `ALLOWED_NFC_KEYS`, the API returns a predefined verse.
+- English variants such as `EN`, `en`, `English`, and `english` are normalized to English.
 
 Example:
 
 ```bash
-curl "http://localhost:8000/api/v1/daily-verse?name=Byongho&language=Korean"
+curl "http://localhost:8000/api/v1/daily-verse?language=Korean&key=YOUR_NFC_KEY"
 ```
 
 ### `POST /api/v1/custom-message`
@@ -60,15 +68,20 @@ Query parameters:
 
 - `name` (optional)
 - `language` (optional, default: `Korean`)
+- `key` (optional, but required for authorized generation)
 
 JSON body:
 
 - `situation` (optional)
 
+Behavior:
+
+- If `key` is missing or not included in `ALLOWED_NFC_KEYS`, the API returns an unauthorized-user message.
+
 Example:
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/custom-message?name=Byongho&language=Korean" \
+curl -X POST "http://localhost:8000/api/v1/custom-message?name=Byongho&language=Korean&key=YOUR_NFC_KEY" \
   -H "Content-Type: application/json" \
   -d '{"situation":"I am anxious about my future"}'
 ```
