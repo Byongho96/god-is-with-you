@@ -1,5 +1,7 @@
 # God is with You
 
+**Live:** https://god-is-with-you.vercel.app
+
 A full-stack web application that provides Bible verses and personalized comfort messages powered by AI.
 
 ## Overview
@@ -83,11 +85,9 @@ For detailed setup instructions, see [client/README.md](client/README.md) and [s
 
 ## Features Preview
 
-### Daily Verse
-![Daily Verse](./images/daily-verse.png)
-
-### Custom Situation
-![Custom Situation](./images/custom-situation.png)
+| Daily Verse | Custom Situation |
+|:-----------:|:----------------:|
+| ![Daily Verse](./images/daily-verse.png) | ![Custom Situation](./images/custom-situation.png) |
 
 ## API Endpoints
 
@@ -100,7 +100,7 @@ For detailed setup instructions, see [client/README.md](client/README.md) and [s
 
 ## Deployment
 
-Both services include Docker support:
+Fastapi service include Docker support:
 
 ```bash
 # Backend
