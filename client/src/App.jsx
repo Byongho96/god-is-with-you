@@ -130,15 +130,15 @@ export default function App() {
         ))}
         <div className='vignette-bottom' />
         <div className='vignette-left' />
-        <div className={`dreamy-loading-layer ${isLoading ? 'is-active' : ''}`} aria-hidden='true'>
-          <div className='aurora-flow aurora-flow--a' />
-          <div className='aurora-flow aurora-flow--b' />
-          <div className='aurora-flow aurora-flow--c' />
-          <div className='nebula-halo' />
-          <div className='starfield' />
-          <div className='dreamy-grain' />
-          <div className='loading-ripple-overlay' />
-        </div>
+      </div>
+
+      <div
+        className={`simple-loading-overlay ${isLoading ? 'is-active' : ''}`}
+        role='status'
+        aria-live='polite'
+        aria-label='Loading daily verse'
+      >
+        <div className='soft-wave-loader' aria-hidden='true' />
       </div>
 
       <div className='w-full h-16 flex items-center justify-between app-horizontal-gutter bg-transparent z-10 gap-4'>
