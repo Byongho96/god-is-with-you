@@ -4,9 +4,11 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-import google.generativeai as genai
 
-from schemas import VerseRequest, VerseResponse
+from google import genai
+from google.genai import types
+
+from server.schemas import VerseRequest, VerseResponse
 
 # ---------------------------------------------------------
 # Configuration & Initialization
@@ -17,8 +19,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable is not set.")
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-flash')
+client = genai.Client(api_key=GEMINI_API_KEY)
+MODEL_ID = 'gemini-2.5-flash'
 
 app = FastAPI(
     title="Bible Verse & Comfort API",
@@ -27,10 +29,8 @@ app = FastAPI(
 )
 
 ALLOWED_ORIGINS = [
-    "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
-    "http://127.0.0.1",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "https://byongho96.github.io",
@@ -78,12 +78,18 @@ def get_name_context_and_instruction(name: str | None, language: str) -> tuple[s
 # ---------------------------------------------------------
 async def fetch_from_gemini(prompt: str, temperature: float = 0.9) -> dict:
     try:
-        response = await model.generate_content_async(
-            prompt,
-            generation_config=genai.types.GenerationConfig(temperature=temperature)
+        response = await client.aio.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+                response_mime_type="application/json"
+            )
         )
         
         raw_text = response.text.strip()
+        
+        # Handle cases where Gemini wraps JSON in code blocks
         if raw_text.startswith("```json"):
             raw_text = raw_text[7:-3].strip()
         elif raw_text.startswith("```"):
