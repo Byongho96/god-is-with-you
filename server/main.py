@@ -1,7 +1,7 @@
 import os
 import random
-from datetime import date
-from fastapi import FastAPI, HTTPException, Query
+from datetime import date, datetime, timedelta, timezone
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -20,6 +20,8 @@ from server.schemas import VerseRequest, VerseResponse
 # Configuration & Initialization
 # ---------------------------------------------------------
 load_dotenv()
+
+KST = timezone(timedelta(hours=9))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
@@ -62,11 +64,10 @@ Rules:
 3. Output strictly in requested language.
 4. JSON format only (keys: verse, ref). No markdown tags.
 """
-
-# ---------------------------------------------------------
-# Cache Memory (Only for Daily Verses)
-# ---------------------------------------------------------
-DAILY_VERSE_CACHE = {}
+def get_seconds_until_midnight():
+    now = datetime.now(KST)  # 현재 한국 시간
+    tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return int((tomorrow - now).total_seconds())
 
 
 def normalize_language(language: str | None) -> str:
@@ -99,11 +100,6 @@ def get_predefined_daily_verse(language: str | None) -> VerseResponse:
 def get_unauthorized_response(language: str | None) -> VerseResponse:
     language_key = get_language_key(language)
     return VerseResponse(**UNAUTHORIZED_MESSAGES[language_key])
-
-def get_daily_cache_key(language: str) -> str:
-    """Generates a cache key based on the current date and language."""
-    today_str = date.today().isoformat()
-    return f"{today_str}_{language.lower()}"
 
 
 def get_name_context_and_instruction(name: str | None, language: str) -> tuple[str, str]:
@@ -151,6 +147,7 @@ def health_check():
 
 @app.get("/api/v1/daily-verse", response_model=VerseResponse, tags=["Verse"])
 async def generate_daily_verse(
+    response: Response,
     language: str = Query("Korean", description="Target language for the verse"),
     key: str | None = Query(None, description="NFC key for access control")
 ):
@@ -158,19 +155,17 @@ async def generate_daily_verse(
     Returns a highly random, uplifting Bible verse to start the day.
     Caches the result for 24 hours based on the requested language.
     """
+    # Set Cache Configuration
+    seconds_left = get_seconds_until_midnight()
+    
+    cache_time = max(seconds_left, 60)
+    response.headers["Cache-Control"] = f"public, s-maxage={cache_time}, stale-while-revalidate=60"
+    
     normalized_language = normalize_language(language)
-
-    print(is_authorized_nfc_key(key))
 
     if not is_authorized_nfc_key(key):
         return get_predefined_daily_verse(normalized_language)
 
-    cache_key = get_daily_cache_key(normalized_language)
-    
-    # 1. Check Cache
-    if cache_key in DAILY_VERSE_CACHE:
-        return DAILY_VERSE_CACHE[cache_key]
-    
     # Simple randomization for verse selection strategy (5% chance for famous, 95% for lesser-known)
     if random.random() < 0.05:
         rule_text = "Select a highly famous, beloved classic verse (e.g., Psalms, Gospels) that everyone loves."
@@ -187,8 +182,6 @@ async def generate_daily_verse(
     parsed_data = await fetch_from_gemini(prompt, temperature=0.9)
     result = VerseResponse(**parsed_data)
     
-    # 3. Save to Cache
-    DAILY_VERSE_CACHE[cache_key] = result
     return result
 
 @app.post("/api/v1/custom-message", response_model=VerseResponse, tags=["Message"])

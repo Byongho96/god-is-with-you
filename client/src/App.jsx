@@ -69,7 +69,7 @@ export default function App() {
     setError('');
 
     try {
-      const payload = await fetchDailyVerse({ name, language, key });
+      const payload = await fetchDailyVerse({ language, key });
       setVerseData(normalizeVersePayload(payload));
     } catch (requestError) {
       setError(requestError.message);
@@ -77,7 +77,7 @@ export default function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [key, language, name]);
+  }, [key, language]);
 
   useEffect(() => {
     loadDailyVerse();

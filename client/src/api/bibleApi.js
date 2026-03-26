@@ -20,8 +20,8 @@ async function readError(response, fallbackMessage) {
   return fallbackMessage;
 }
 
-export async function fetchDailyVerse({ name = '', language = 'Korean', key = '' } = {}) {
-  const query = buildQueryParams(name, language, key);
+export async function fetchDailyVerse({ language = 'Korean', key = '' } = {}) {
+  const query = buildQueryParams(null, language, key);
   const endpoint = query ? `${API_BASE_URL}/daily-verse?${query}` : `${API_BASE_URL}/daily-verse`;
   const response = await fetch(endpoint);
   if (!response.ok) throw new Error(await readError(response, 'Failed to fetch daily verse.'));
